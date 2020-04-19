@@ -14,9 +14,7 @@ ParamBoth | Yes                          | Yes                          | No    
 Prefix    | Yes; channel member nickname | Yes; channel member nickname | Yes; once per channel member                                      | Grants/revokes a status rank to the user specified in the parameter.
 List      | Yes                          | Yes                          | Yes; up to the [maximum list size](/3/configuration/#ltmaxlistgt) | Adds/removes entries from a list.
 
-### Channel Modes
-
-This page only lists core channel modes. For details on the channel modes of a specific module please refer to [the appropriate page for that module](/3/modules).
+### Core Channel Modes
 
 Name       | Character | Type      | Parameter Syntax | Usable By         | Description
 ---------- | --------- | --------- | ---------------- | ----------------- | -----------
@@ -82,9 +80,13 @@ Removes channel voice status from Sadie in \#channel:
 /MODE #channel -v Sadie
 ```
 
-### User Modes
+### Modular Channel Modes
 
-This page only lists core user modes. For details on the user modes of a specific module please refer to [the appropriate page for that module](/3/modules).
+For more details and examples of the channel modes of a specific module please refer to [the appropriate page for that module](/3/modules).
+
+{! 3/_modes-modules-chan.md !}
+
+### Core User Modes
 
 Name      | Character | Type      | Parameter Syntax  | Usable By        | Description
 --------- | --------- | --------- | ----------------- | ---------------- | -----------
@@ -112,3 +114,9 @@ Disables all enabled snomasks:
 ```plaintext
 /MODE YourNick -s
 ```
+
+### Modular User Modes
+
+For more details and examples of the user modes of a specific module please refer to [the appropriate page for that module](/3/modules).
+
+{! 3/_modes-modules-user.md !}

@@ -1,0 +1,17 @@
+Name            | Character | Type   | Paramter Syntax | Usable By | Description                                                                       | Provided By
+----------------|-----------|--------|-----------------|-----------|-----------------------------------------------------------------------------------|------------------------------------------------
+deaf_commonchan | c         | Switch | *None*          | -         | Requires other users to have a common channel before they can message this user   | [commonchans](/2/modules/commonchans)
+deaf            | d         | Switch | *None*          | -         | Prevents the user from receiving channel messages                                 | [deaf](/2/modules/deaf)
+callerid        | g         | Switch | *None*          | -         | Enables whitelisting of who can message the user                                  | [callerid](/2/modules/callerid)
+helpop          | h         | Switch | *None*          | -         | Marks the user as being available for help                                        | [helpop](/2/modules/helpop)
+servprotect     | k         | Switch | *None*          | -         | Protects services pseudoclients against kicks                                     | [servprotect](/2/modules/servprotect)
+u_registered    | r         | Switch | *None*          | -         | Marks the user as being logged into a services account                            | [services_account](/2/modules/services_account)
+cloak           | x         | Switch | *None*          | -         | Enables hiding of the user                                                        | [cloaking](/2/modules/cloaking)
+bot             | B         | Switch | *None*          | -         | Marks the user as a bot                                                           | [botmode](/2/modules/botmode)
+u_censor        | G         | Switch | *None*          | -         | Enables censoring messages sent to the user                                       | [censor](/2/modules/censor)
+hideoper        | H         | Switch | *None*          | -         | Hides the user                                                                    | [hideoper](/2/modules/hideoper)
+hidechans       | I         | Switch | *None*          | -         | Hides the channels the user is in from their                                      | [hidechans](/2/modules/hidechans)
+antiredirect    | L         | Switch | *None*          | -         | Prevents users from being redirected by channel mode                              | [redirect](/2/modules/redirect)
+regdeaf         | R         | Switch | *None*          | -         | Prevents users who are not logged into a services account from messaging the user | [services_account](/2/modules/services_account)
+u_stripcolor    | S         | Switch | *None*          | -         | Enables stripping of IRC formatting codes from private messages                   | [stripcolor](/2/modules/stripcolor)
+showwhois       | W         | Switch | *None*          | -         | Informs the user when someone does a                                              | [showwhois](/2/modules/showwhois)
