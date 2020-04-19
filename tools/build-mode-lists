@@ -1,0 +1,169 @@
+#!/usr/bin/env perl
+#
+# InspIRCd -- Internet Relay Chat Daemon
+#
+#   Copyright (C) 2020 Matt Schatz <genius3000@g3k.solutions>
+#   Copyright (C) 2020 Sadie Powell <sadie@witchery.services>
+#
+# This file is part of InspIRCd.  InspIRCd is free software: you can
+# redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, version 2.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
+BEGIN {
+	require 5.10.0;
+}
+
+use feature ':5.10';
+use strict;
+use warnings FATAL => qw(all);
+
+use File::Basename qw(dirname basename);
+use File::Find;
+use FindBin        qw($RealDir);
+use lib dirname $RealDir;
+
+use Text::MarkdownTable;
+
+if (scalar @ARGV < 1) {
+	print { *STDERR } "Usage: $0 <major version>\n";
+	exit 1
+}
+
+my $major = shift;
+my $dir = "$RealDir/../docs/$major/modules";
+do { print { *STDERR } "$dir does not exist and/or is not a directory!\n"; exit 1; } unless -d $dir;
+
+# Read in an entire file.
+sub slurp {
+	my $_file = shift;
+	open my $fh, '<', $_file or return;
+	local $/ = undef;
+	my $content = <$fh>;
+	close $fh;
+	return $content;
+}
+
+# Hashes for all the mode information.
+my %chanmodes;
+my %usermodes;
+
+# Array of all the module doc files.
+my @files;
+find(sub { push @files, $File::Find::name unless -d; }, $dir);
+
+# Loop through each module doc file looking for modes.
+for my $file (@files) {
+	my $data = slurp($file);
+	# Below here is some terrible regexes, I suggest you stop looking right now!
+	# First, capture the section for the respective mode type (channel or user).
+	# Then we split the table into each column and save the values locally to save to the hash.
+	# The column 'Usable By' doesn't exist in the v2 docs.
+	if ($data =~ m/### Channel Modes\n+(.*?)\n+(?:\#+|$)/ms) {
+		my $line = $1;
+		for (split /^/, $line) {
+			if ($_ =~ m/.*?(\w+)\s+\|\s(\w)\s+\|\s(\w+)\s+\|\s(.+?)\s+\|\s(?:(.+?)\s+\|\s(.+)|([\w\s]+)).*?/ms) {
+				my $name = $1;
+				my $char = $2;
+				my $type = $3;
+				my $syntax = $4;
+				my $useby = defined $6 ? $5 : "-";
+				my $desc = defined $6 ? $6 : $7;
+				$chanmodes{$char} = [ $name, $type, $syntax, $useby, $desc, basename($file, ".md") ];
+			}
+		}
+	}
+	if ($data =~ m/### User Modes\n+(.*?)\n+(?:\#+|$)/ms) {
+		my $line = $1;
+		for (split /^/, $line) {
+			if ($_ =~ m/.*?(\w+)\s+\|\s(\w)\s+\|\s(\w+)\s+\|\s(.+?)\s+\|\s(?:(.+?)\s+\|\s(.+)|([\w\s]+)).*?/ms) {
+				my $name = $1;
+				my $char = $2;
+				my $type = $3;
+				my $syntax = $4;
+				my $useby = defined $6 ? $5 : "-" ;
+				my $desc = defined $6 ? $6 : $7;
+				$usermodes{$char} = [ $name, $type, $syntax, $useby, $desc, basename($file, ".md") ];
+			}
+		}
+	}
+	undef $data;
+}
+
+# Create a Markdown Table of the channel modes.
+my $chanmodes_out;
+my $table_chanmodes = Text::MarkdownTable->new(
+	edges   => 0,
+	file    => \$chanmodes_out,
+	columns => [
+		'Name',
+		'Character',
+		'Type',
+		'Paramter Syntax',
+		'Usable By',
+		'Description',
+		'Provided By'
+		]
+	);
+foreach my $char (map { (my $x = $_) =~ tr/a-zA-Z/A-Za-z/; $x } sort map { (my $x = $_) =~ tr/a-zA-Z/A-Za-z/; $x } keys %chanmodes) {
+	$table_chanmodes->add({
+		a => @{ $chanmodes{$char} }[0],
+		b => $char,
+		c => @{ $chanmodes{$char} }[1],
+		d => @{ $chanmodes{$char} }[2],
+		e => @{ $chanmodes{$char} }[3],
+		f => @{ $chanmodes{$char} }[4],
+		g => "[@{ $chanmodes{$char} }[5]](/$major/modules/@{ $chanmodes{$char} }[5])"
+	});
+}
+$table_chanmodes->done;
+
+# Create a Markdown table of the user modes.
+my $usermodes_out;
+my $table_usermodes = Text::MarkdownTable->new(
+	edges   => 0,
+	file    => \$usermodes_out,
+	columns => [
+		'Name',
+		'Character',
+		'Type',
+		'Paramter Syntax',
+		'Usable By',
+		'Description',
+		'Provided By'
+		]
+	);
+foreach my $char (map { (my $x = $_) =~ tr/a-zA-Z/A-Za-z/; $x } sort map { (my $x = $_) =~ tr/a-zA-Z/A-Za-z/; $x } keys %usermodes) {
+	$table_usermodes->add({
+		a => @{ $usermodes{$char} }[0],
+		b => $char,
+		c => @{ $usermodes{$char} }[1],
+		d => @{ $usermodes{$char} }[2],
+		e => @{ $usermodes{$char} }[3],
+		f => @{ $usermodes{$char} }[4],
+		g => "[@{ $usermodes{$char} }[5]](/$major/modules/@{ $usermodes{$char} }[5])"
+	});
+}
+$table_usermodes->done;
+
+# Remove trailing whitespace from the last column of the tables.
+$chanmodes_out =~ s/\s+$//mg;
+$usermodes_out =~ s/\s+$//mg;
+
+# Finally, read in the modes file, add/replace the marked section, and write the file.
+my $in = slurp("$RealDir/../docs/$major/modes.md");
+$in =~ s/<!-- begin module channel modes -->.*<!-- end module channel modes -->/<!-- begin module channel modes -->\n$chanmodes_out\n<!-- end module channel modes -->/s;
+$in =~ s/<!-- begin module user modes -->.*<!-- end module user modes -->/<!-- begin module user modes -->\n$usermodes_out\n<!-- end module user modes -->/s;
+open (my $out, '>', "$RealDir/../docs/$major/modes.md");
+print $out $in;
+close $out;
+undef $in;
